@@ -6,13 +6,23 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview --host"
+    "preview": "vite preview --host",
+    "build:app": "vite build --mode app && cap sync",
+    "android": "npm run build:app && cap open android",
+    "ios": "npm run build:app && cap open ios"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^8.2.0",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@capacitor/status-bar": "^8.0.4",
     "@dimforge/rapier3d-compat": "^0.21.0",
     "three": "^0.186.1"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2",
     "vite": "^8.3.2"
   }
 }

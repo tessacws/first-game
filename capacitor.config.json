@@ -1,0 +1,19 @@
+{
+  "appId": "com.pairpop.game",
+  "appName": "Pair Pop 3D",
+  "webDir": "dist",
+  "backgroundColor": "#2f2b28",
+  "android": {
+    "backgroundColor": "#2f2b28"
+  },
+  "ios": {
+    "backgroundColor": "#2f2b28",
+    "contentInset": "never"
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": true,
+      "style": "DARK"
+    }
+  }
+}

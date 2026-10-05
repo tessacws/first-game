@@ -1,12 +1,16 @@
-// Ad layer. Every function returns a Promise so callers don't change when
-// real ads land: replace the bodies with AdMob calls via Capacitor
-// (e.g. @capacitor-community/admob) when wrapping the game as a native app.
+// Ad layer. Every function returns a Promise; the rest of the game only uses
+// these five functions and never talks to an ad SDK directly.
 //
-// Until then, MOCK_ADS shows on-screen placeholder ads so the whole flow
-// (banner, interstitial, rewarded) can be seen and tested in the browser.
-// Set it to false to make the stubs silent (rewarded ads then always grant).
+// - In the native app (Capacitor on Android/iOS) they use AdMob through
+//   @capacitor-community/admob. Ad unit ids live in adConfig.js.
+// - In a browser there is no AdMob, so MOCK_ADS shows on-screen placeholder
+//   ads (banner, interstitial, rewarded) to test the whole flow.
+import { Capacitor } from '@capacitor/core';
+import { AD_UNITS, USE_TEST_ADS } from './adConfig.js';
 
-export const MOCK_ADS = true;
+const NATIVE = Capacitor.isNativePlatform();
+
+export const MOCK_ADS = !NATIVE; // in the browser, show placeholder ads
 
 /** Interstitial cadence: show one after every Nth completed level. */
 export const INTERSTITIAL_EVERY = 2;
@@ -19,6 +23,7 @@ let bannerEl = null;
 
 export async function showBanner() {
   log('showBanner');
+  if (NATIVE) return native.showBanner();
   if (!MOCK_ADS) return;
   if (!bannerEl) {
     bannerEl = document.createElement('div');
@@ -31,11 +36,13 @@ export async function showBanner() {
 
 export async function hideBanner() {
   log('hideBanner');
+  if (NATIVE) return native.hideBanner();
   if (bannerEl) bannerEl.hidden = true;
 }
 
 export async function showInterstitial() {
   log('showInterstitial');
+  if (NATIVE) return native.showInterstitial();
   if (!MOCK_ADS) return;
   await mockFullscreenAd({ title: 'Test interstitial ad', seconds: INTERSTITIAL_SECONDS, rewarded: false });
 }
@@ -43,6 +50,7 @@ export async function showInterstitial() {
 /** Resolves true when the user watched the full ad and earned the reward. */
 export async function showRewardedAd() {
   log('showRewardedAd');
+  if (NATIVE) return native.showRewarded();
   if (!MOCK_ADS) return true;
   const granted = await mockFullscreenAd({
     title: 'Test rewarded ad',
@@ -52,6 +60,125 @@ export async function showRewardedAd() {
   log(granted ? 'reward granted' : 'closed early, no reward');
   return granted;
 }
+
+/** Call once at startup: consent (GDPR) and tracking prompts, then preload ads. */
+export async function initAds() {
+  if (NATIVE) await native.init();
+}
+
+// ---------------------------------------------------------------- AdMob (native)
+
+const native = {
+  admob: null,
+  ready: false,
+  units: null,
+
+  async init() {
+    try {
+      const mod = await import('@capacitor-community/admob');
+      this.mod = mod;
+      this.admob = mod.AdMob;
+      this.units = AD_UNITS[Capacitor.getPlatform()] ?? AD_UNITS.android;
+      await this.admob.initialize({ initializeForTesting: USE_TEST_ADS });
+
+      // iOS 14+: App Tracking Transparency prompt (text is in Info.plist)
+      if (Capacitor.getPlatform() === 'ios') {
+        const { status } = await this.admob.trackingAuthorizationStatus();
+        if (status === 'notDetermined') await this.admob.requestTrackingAuthorization();
+      }
+      // EU/UK users: Google UMP consent form when required
+      const info = await this.admob.requestConsentInfo();
+      if (info.isConsentFormAvailable && info.status === mod.AdmobConsentStatus.REQUIRED) {
+        await this.admob.showConsentForm();
+      }
+      this.ready = true;
+      this.preloadInterstitial();
+      this.preloadRewarded();
+    } catch (err) {
+      console.warn('[ads] AdMob init failed, ads disabled', err);
+    }
+  },
+
+  opts(adId) {
+    return { adId, isTesting: USE_TEST_ADS };
+  },
+
+  async showBanner() {
+    if (!this.ready) return;
+    const { BannerAdSize, BannerAdPosition } = this.mod;
+    await this.admob
+      .showBanner({
+        ...this.opts(this.units.banner),
+        adSize: BannerAdSize.ADAPTIVE_BANNER,
+        position: BannerAdPosition.BOTTOM_CENTER,
+        margin: 0,
+      })
+      .catch((e) => console.warn('[ads] banner', e));
+  },
+
+  async hideBanner() {
+    if (!this.ready) return;
+    await this.admob.hideBanner().catch(() => {});
+  },
+
+  interstitialLoaded: null,
+  preloadInterstitial() {
+    this.interstitialLoaded = this.admob
+      .prepareInterstitial(this.opts(this.units.interstitial))
+      .then(() => true)
+      .catch(() => false);
+  },
+
+  async showInterstitial() {
+    if (!this.ready || !(await this.interstitialLoaded)) return;
+    const { InterstitialAdPluginEvents: E } = this.mod;
+    await new Promise((resolve) => {
+      const handles = [];
+      const done = () => {
+        handles.forEach((h) => h.then((x) => x.remove()));
+        resolve();
+      };
+      handles.push(this.admob.addListener(E.Dismissed, done));
+      handles.push(this.admob.addListener(E.FailedToShow, done));
+      this.admob.showInterstitial().catch(done);
+    });
+    this.preloadInterstitial();
+  },
+
+  rewardedLoaded: null,
+  preloadRewarded() {
+    this.rewardedLoaded = this.admob
+      .prepareRewardVideoAd(this.opts(this.units.rewarded))
+      .then(() => true)
+      .catch(() => false);
+  },
+
+  async showRewarded() {
+    if (!this.ready) return false;
+    if (!(await this.rewardedLoaded)) {
+      // Nothing cached (offline / no fill): try once more right now.
+      this.preloadRewarded();
+      if (!(await this.rewardedLoaded)) return false;
+    }
+    const { RewardAdPluginEvents: E } = this.mod;
+    const granted = await new Promise((resolve) => {
+      let rewarded = false;
+      const handles = [];
+      const done = () => {
+        handles.forEach((h) => h.then((x) => x.remove()));
+        resolve(rewarded);
+      };
+      handles.push(this.admob.addListener(E.Rewarded, () => (rewarded = true)));
+      handles.push(this.admob.addListener(E.Dismissed, done));
+      handles.push(this.admob.addListener(E.FailedToShow, done));
+      this.admob.showRewardVideoAd().catch(done);
+    });
+    this.preloadRewarded();
+    return granted;
+  },
+};
+
+// ---------------------------------------------------------------- mock ads (browser)
 
 function mockFullscreenAd({ title, seconds, rewarded }) {
   return new Promise((resolve) => {

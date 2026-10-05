@@ -1,0 +1,5 @@
+package com.pairpop.game;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}

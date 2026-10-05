@@ -30,12 +30,28 @@ for a custom domain, or `BASE_PATH=./` for a Capacitor build).
 `.github/workflows/deploy.yml` builds and deploys on every push to `main`.
 Enable it once in **Settings → Pages → Source: GitHub Actions**.
 
+## Mobile apps (Google Play / App Store)
+
+The game ships as native Android and iOS apps through Capacitor
+(`android/`, `ios/`, `capacitor.config.json`). Real AdMob ads run in the app;
+the browser keeps the on-screen test ads.
+
+```bash
+npm run build:app   # build the web app for the native shell and sync it
+npm run android     # build:app + open Android Studio
+npm run ios         # build:app + open Xcode (Mac only)
+```
+
+Step-by-step store submission (accounts, AdMob ids, signing, store listings,
+privacy forms): **[PUBLISHING.md](PUBLISHING.md)**.
+
 ## Project layout
 
 ```
 src/
-  main.js            boot: init Rapier, create Game + UI
-  ads.js             ad stubs (showBanner, showInterstitial, showRewardedAd)
+  main.js            boot: ads consent, init Rapier, create Game + UI
+  ads.js             ads: AdMob in the app, on-screen test ads in the browser
+  adConfig.js        AdMob ad unit ids (Google test ids by default)
   style.css          all UI styling
   game/
     Game.js          renderer, camera fit, physics, pile, match plate, power-ups
@@ -54,6 +70,9 @@ src/
   ui/
     UI.js            menu / HUD / pause / win / lose screens and flow
 public/models/       drop .glb files here
+public/privacy.html  privacy policy (required by the stores)
+assets/              source images for app icons and splash screens
+android/, ios/       native app projects (Capacitor)
 ```
 
 ## Adding / replacing objects
@@ -152,13 +171,14 @@ power-up. All numbers are constants at the top of `src/ui/UI.js`.
 - `showRewardedAd()`: resolves `true` only if the ad was watched to the end. Used for +30s on the
   lose screen, double coins, free coins and free power-ups
 
-With `MOCK_ADS = true` (the default) these show **on-screen test ads**: a grey
-banner, a 3-second interstitial, and a 5-second rewarded ad that grants nothing
-if closed early. That lets you test the whole flow in the browser.
+In the **native app** they use Google AdMob (`@capacitor-community/admob`):
+adaptive banner, interstitial and rewarded ads, plus the GDPR consent form and
+the iOS tracking prompt at startup. Ad unit ids are in `src/adConfig.js` and
+default to Google's test ids. See [PUBLISHING.md](PUBLISHING.md) for going live.
 
-To go live, wrap the game with Capacitor, install an AdMob plugin (e.g.
-`@capacitor-community/admob`), and replace the function bodies with the
-plugin's calls. Nothing else in the game needs to change.
+In the **browser** they show **on-screen test ads**: a grey banner, a 3-second
+interstitial, and a 5-second rewarded ad that grants nothing if closed early,
+so the whole flow can be tested with `npm run dev`.
 
 ## Performance notes
 
