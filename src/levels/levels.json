@@ -1,0 +1,27 @@
+{
+  "defaults": {
+    "starThresholds": [0.25, 0.5],
+    "coinsPerLevel": 20,
+    "coinsPerStar": 10
+  },
+  "levels": [
+    { "pairs": 8,  "time": 120, "types": ["cube", "sphere", "cone", "torus", "capsule", "cylinder", "star", "heart"] },
+    { "pairs": 9,  "time": 115, "types": ["cube", "sphere", "cone", "torus", "capsule", "cylinder", "star", "heart", "pyramid", "gem"] },
+    { "pairs": 10, "time": 110 },
+    { "pairs": 11, "time": 108 },
+    { "pairs": 12, "time": 105 },
+    { "pairs": 13, "time": 102 },
+    { "pairs": 14, "time": 100 },
+    { "pairs": 15, "time": 98 },
+    { "pairs": 16, "time": 96 },
+    { "pairs": 17, "time": 95 },
+    { "pairs": 18, "time": 94 },
+    { "pairs": 19, "time": 93 },
+    { "pairs": 20, "time": 92 }
+  ],
+  "endless": {
+    "pairsStep": 0,
+    "timeStep": -1,
+    "minTime": 60
+  }
+}
