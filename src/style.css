@@ -454,3 +454,182 @@ h2 {
     opacity: 0;
   }
 }
+
+/* ---------------------------------------------------------------- economy */
+
+.panel {
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+h3 {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 10px;
+}
+.btn-row .btn {
+  flex: 1;
+  font-size: 15px;
+  padding: 12px 8px;
+}
+.btn-gift {
+  background: linear-gradient(#ff8fd0, #e04da6);
+  box-shadow: 0 4px 0 #a32f78;
+}
+.btn-small {
+  padding: 8px 12px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.btn-ad:disabled,
+.btn-gift:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.shop-coins {
+  font-size: 26px;
+  font-weight: 800;
+}
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  text-align: left;
+}
+.shop-icon {
+  font-size: 28px;
+}
+.shop-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.shop-info small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.shop-owned {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.big-icon {
+  font-size: 56px;
+  line-height: 1;
+}
+
+.bump {
+  animation: bump 0.5s;
+}
+@keyframes bump {
+  40% {
+    transform: scale(1.2);
+  }
+}
+
+/* ---------------------------------------------------------------- mock ads */
+
+.mock-banner {
+  position: fixed;
+  left: 50%;
+  bottom: var(--safe-bottom);
+  transform: translateX(-50%);
+  width: min(100%, 320px);
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #f2f2f2;
+  color: #444;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  z-index: 50;
+}
+.mock-banner[hidden] {
+  display: none;
+}
+
+.ad-tag {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #f5b400;
+  color: #222;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.mock-ad {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(160deg, #263238, #111);
+  color: #fff;
+  animation: pop-in 0.2s;
+}
+.mock-ad-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(14px + var(--safe-top)) 14px 14px;
+}
+.mock-ad-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+.mock-ad-close.ready {
+  background: #fff;
+  color: #111;
+}
+.mock-ad-close[hidden] {
+  display: none;
+}
+.mock-ad-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+}
+.mock-ad-title {
+  font-size: 26px;
+  font-weight: 800;
+}
+.mock-ad-sub {
+  color: #9aa;
+  font-size: 14px;
+}
+.mock-ad-count {
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffd54f;
+}

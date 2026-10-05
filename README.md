@@ -110,25 +110,44 @@ same pair count, `timeStep` seconds less per level, never below `minTime`.
 
 ## Power-ups
 
-| power-up | effect                                                       |
-| -------- | ------------------------------------------------------------ |
+| power-up | effect                                                        |
+| -------- | ------------------------------------------------------------- |
 | Hint     | pulses one matching pair (the partner of a held object first) |
-| Shuffle  | re-drops every object in the pile                            |
-| Freeze   | stops the timer for 10 seconds                               |
+| Shuffle  | re-drops every object in the pile                             |
+| Freeze   | stops the timer for 10 seconds                                |
 
-Counts are saved in `localStorage`. When a power-up runs out, tapping it buys
-one for 50 coins. A 3-star clear awards a random free power-up.
+Counts are saved in `localStorage`. Tapping a power-up you have none of pauses
+the game and offers **Buy 1 for 50 coins** or **Watch ad for 1 free**.
+
+## Coins
+
+| source                     | amount                                  |
+| -------------------------- | --------------------------------------- |
+| Clearing a level           | 20 + 10 per star (`levels.json`)        |
+| Win screen "double coins"  | rewarded ad doubles that level's coins  |
+| Daily gift (menu / shop)   | 50, once per calendar day               |
+| "Watch ad" (menu / shop)   | 25 per ad, up to 5 per day              |
+| 3-star clear               | bonus: one random free power-up         |
+
+Coins are spent in the **Shop** (menu, or pause menu in game) at 50 per
+power-up. All numbers are constants at the top of `src/ui/UI.js`.
 
 ## Ads
 
-`src/ads.js` contains stubs that just log to the console:
+`src/ads.js` is the single place ads live:
 
-- `showBanner()` / `hideBanner()` — banner on the menu, hidden in game
-- `showInterstitial()` — shown before the next level after every 2nd completed level (`INTERSTITIAL_EVERY`)
-- `showRewardedAd()` — resolves `true`; used by "Watch ad for +30s" on the lose screen (once per attempt)
+- `showBanner()` / `hideBanner()`: banner on the menu, hidden in game
+- `showInterstitial()`: before the next level after every 2nd completed level (`INTERSTITIAL_EVERY`)
+- `showRewardedAd()`: resolves `true` only if the ad was watched to the end. Used for +30s on the
+  lose screen, double coins, free coins and free power-ups
 
-Replace the bodies with AdMob calls (e.g. `@capacitor-community/admob`) when
-wrapping the game with Capacitor; the rest of the game already awaits them.
+With `MOCK_ADS = true` (the default) these show **on-screen test ads**: a grey
+banner, a 3-second interstitial, and a 5-second rewarded ad that grants nothing
+if closed early. That lets you test the whole flow in the browser.
+
+To go live, wrap the game with Capacitor, install an AdMob plugin (e.g.
+`@capacitor-community/admob`), and replace the function bodies with the
+plugin's calls. Nothing else in the game needs to change.
 
 ## Performance notes
 
