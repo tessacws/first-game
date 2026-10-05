@@ -6,7 +6,7 @@ const DEFAULT_SAVE = {
   coins: 0,
   completedCount: 0,
   stars: {}, // level number -> best stars
-  powerups: { hint: 3, shuffle: 2, freeze: 2 },
+  powerups: { hint: 3, shuffle: 2, magnet: 2, freeze: 2 },
   lastDailyGift: '', // YYYY-MM-DD of the last claimed daily gift
   adCoinsDay: '', // day the adCoinsCount below belongs to
   adCoinsCount: 0, // "watch ad for coins" uses today

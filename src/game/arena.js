@@ -1,105 +1,82 @@
-// The bowl: visual mesh + static Rapier colliders.
+// The play area: a flat table seen from above, with invisible walls that keep
+// the pile inside a rectangle. The rectangle is resized per level so small
+// levels fill the screen as much as big ones.
 import * as THREE from 'three';
 
-export const BOWL = {
-  floorRadius: 3.4,
-  rimRadius: 4.5,
-  rimHeight: 2.0,
-  segments: 18,
-  wallThickness: 0.3,
-  /** invisible walls above the rim keep dropped objects inside */
-  fenceHeight: 14,
-};
+export const TABLE_COLOR = '#2f2b28';
+export const WALL_HEIGHT = 14;
 
-export function createBowlMesh() {
-  const { floorRadius: fr, rimRadius: rr, rimHeight: rh } = BOWL;
-  const profile = [
-    [0, -0.25],
-    [fr + 0.2, -0.25],
-    [rr + 0.35, rh],
-    [rr + 0.35, rh + 0.15],
-    [rr - 0.05, rh + 0.15],
-    [rr, rh],
-    [fr, 0],
-    [0, 0],
-  ].map(([x, y]) => new THREE.Vector2(x, y));
-  const geo = new THREE.LatheGeometry(profile, 40);
-  geo.computeVertexNormals();
-  const mat = new THREE.MeshStandardMaterial({
-    color: '#2d2a6e',
-    roughness: 0.85,
-    metalness: 0.0,
-    side: THREE.DoubleSide,
-  });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.receiveShadow = true;
-  mesh.name = 'bowl';
+function vignetteTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const g = c.getContext('2d');
+  const grad = g.createRadialGradient(128, 128, 10, 128, 128, 128);
+  grad.addColorStop(0, '#5a534c');
+  grad.addColorStop(0.55, '#46403a');
+  grad.addColorStop(1, TABLE_COLOR);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 256, 256);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
 
-  // Soft inner floor disc to brighten the play area
-  const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(fr, 40),
-    new THREE.MeshStandardMaterial({ color: '#433f9a', roughness: 0.9 }),
+export function createTableMesh() {
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshStandardMaterial({ map: vignetteTexture(), roughness: 0.95 }),
   );
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = 0.005;
-  floor.receiveShadow = true;
-  mesh.add(floor);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.receiveShadow = true;
+  mesh.name = 'table';
   return mesh;
 }
 
-export function createBowlColliders(RAPIER, world) {
-  const { floorRadius: fr, rimRadius: rr, rimHeight: rh, segments, wallThickness: t } = BOWL;
-  const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
+/** Scales the table so it covers the whole view around a width×depth play area. */
+export function sizeTableMesh(mesh, width, depth) {
+  const s = Math.max(width, depth) * 2.6;
+  mesh.scale.set(s, s, 1);
+}
 
-  // Floor
+/** Creates a fixed body with a floor and four invisible walls. Returns the body. */
+export function createTableColliders(RAPIER, world, width, depth) {
+  const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed());
+  const t = 0.5;
+  const h = WALL_HEIGHT / 2;
   world.createCollider(
-    RAPIER.ColliderDesc.cuboid(rr + 2, 0.5, rr + 2).setTranslation(0, -0.5, 0).setFriction(0.8),
+    RAPIER.ColliderDesc.cuboid(width, 0.5, depth).setTranslation(0, -0.5, 0).setFriction(0.9),
     body,
   );
-
-  const dr = rr - fr;
-  const wallLen = Math.hypot(dr, rh);
-  const tilt = Math.atan2(dr, rh);
-  const halfWidth = (Math.PI * rr) / segments + 0.15;
-  const qX = new THREE.Quaternion();
-  const qY = new THREE.Quaternion();
-  const q = new THREE.Quaternion();
-  const axisX = new THREE.Vector3(1, 0, 0);
-  const axisY = new THREE.Vector3(0, 1, 0);
-
-  for (let i = 0; i < segments; i++) {
-    const a = (i / segments) * Math.PI * 2;
-    const radial = new THREE.Vector3(Math.sin(a), 0, Math.cos(a));
-
-    // Slanted wall
-    qX.setFromAxisAngle(axisX, tilt);
-    qY.setFromAxisAngle(axisY, a);
-    q.multiplyQuaternions(qY, qX);
-    const normal = new THREE.Vector3(0, -Math.sin(tilt), Math.cos(tilt)).applyQuaternion(qY);
-    const mid = radial
-      .clone()
-      .multiplyScalar((fr + rr) / 2)
-      .setY(rh / 2)
-      .addScaledVector(normal, t / 2);
+  const walls = [
+    [width / 2 + t, h, 0, t, h, depth / 2 + t],
+    [-width / 2 - t, h, 0, t, h, depth / 2 + t],
+    [0, h, depth / 2 + t, width / 2 + t, h, t],
+    [0, h, -depth / 2 - t, width / 2 + t, h, t],
+  ];
+  for (const [x, y, z, hx, hy, hz] of walls) {
     world.createCollider(
-      RAPIER.ColliderDesc.cuboid(halfWidth, wallLen / 2 + 0.2, t / 2)
-        .setTranslation(mid.x, mid.y, mid.z)
-        .setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
-        .setFriction(0.5),
-      body,
-    );
-
-    // Vertical invisible fence above the rim
-    q.copy(qY);
-    const fenceH = BOWL.fenceHeight;
-    const fp = radial.clone().multiplyScalar(rr + t / 2).setY(rh + fenceH / 2);
-    world.createCollider(
-      RAPIER.ColliderDesc.cuboid(halfWidth, fenceH / 2, t / 2)
-        .setTranslation(fp.x, fp.y, fp.z)
-        .setRotation({ x: q.x, y: q.y, z: q.z, w: q.w })
-        .setFriction(0.2),
+      RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(x, y, z).setFriction(0.3),
       body,
     );
   }
   return body;
+}
+
+/** A brushed-metal dish split in two halves: the 2-slot match plate. Radius 1. */
+export function createPlateMesh() {
+  const group = new THREE.Group();
+  const metal = new THREE.MeshStandardMaterial({ color: '#c3c8cf', roughness: 0.35, metalness: 0.35 });
+  const inner = new THREE.MeshStandardMaterial({ color: '#8f969f', roughness: 0.5, metalness: 0.3 });
+
+  const dish = new THREE.Mesh(new THREE.CylinderGeometry(0.92, 0.88, 0.06, 40), inner);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.95, 0.07, 10, 48), metal);
+  rim.rotation.x = Math.PI / 2;
+  const divider = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 1.8), metal);
+  divider.position.y = 0.04;
+  // inner sheen ring
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.015, 6, 48), metal);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.035;
+  group.add(dish, rim, divider, ring);
+  return group;
 }

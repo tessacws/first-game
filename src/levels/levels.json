@@ -1,27 +1,29 @@
 {
   "defaults": {
+    "pairsPerType": 1,
     "starThresholds": [0.25, 0.5],
     "coinsPerLevel": 20,
     "coinsPerStar": 10
   },
   "levels": [
-    { "pairs": 8,  "time": 120, "types": ["cube", "sphere", "cone", "torus", "capsule", "cylinder", "star", "heart"] },
-    { "pairs": 9,  "time": 115, "types": ["cube", "sphere", "cone", "torus", "capsule", "cylinder", "star", "heart", "pyramid", "gem"] },
-    { "pairs": 10, "time": 110 },
-    { "pairs": 11, "time": 108 },
-    { "pairs": 12, "time": 105 },
-    { "pairs": 13, "time": 102 },
-    { "pairs": 14, "time": 100 },
-    { "pairs": 15, "time": 98 },
-    { "pairs": 16, "time": 96 },
-    { "pairs": 17, "time": 95 },
-    { "pairs": 18, "time": 94 },
-    { "pairs": 19, "time": 93 },
-    { "pairs": 20, "time": 92 }
+    { "pairs": 8,  "pairsPerType": 1, "time": 120, "types": ["volleyball", "donut", "burger", "apple", "duck", "gift", "watermelon", "cupcake", "wheel", "soda"] },
+    { "pairs": 10, "pairsPerType": 1, "time": 120 },
+    { "pairs": 12, "pairsPerType": 2, "time": 125 },
+    { "pairs": 15, "pairsPerType": 2, "time": 135 },
+    { "pairs": 18, "pairsPerType": 2, "time": 145 },
+    { "pairs": 21, "pairsPerType": 3, "time": 155 },
+    { "pairs": 24, "pairsPerType": 3, "time": 165 },
+    { "pairs": 28, "pairsPerType": 3, "time": 175 },
+    { "pairs": 32, "pairsPerType": 3, "time": 185 },
+    { "pairs": 36, "pairsPerType": 3, "time": 195 },
+    { "pairs": 40, "pairsPerType": 4, "time": 205 },
+    { "pairs": 45, "pairsPerType": 4, "time": 215 },
+    { "pairs": 50, "pairsPerType": 4, "time": 225 }
   ],
   "endless": {
-    "pairsStep": 0,
-    "timeStep": -1,
-    "minTime": 60
+    "pairsStep": 2,
+    "maxPairs": 60,
+    "secondsPerPairStep": -0.1,
+    "minSecondsPerPair": 3
   }
 }

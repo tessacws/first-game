@@ -1,5 +1,5 @@
 :root {
-  --bg: #1b1640;
+  --bg: #2f2b28;
   --panel: rgba(30, 24, 74, 0.94);
   --panel-edge: rgba(255, 255, 255, 0.12);
   --text: #f4f1ff;
@@ -88,7 +88,7 @@ body {
   align-items: center;
   gap: 10px;
   padding: calc(10px + var(--safe-top)) 12px 8px;
-  background: linear-gradient(rgba(10, 6, 30, 0.75), rgba(10, 6, 30, 0));
+  background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
 }
 
 .hud-level {
@@ -145,52 +145,41 @@ body {
 }
 
 .hud-bottom {
-  padding: 8px 12px calc(12px + var(--safe-bottom));
+  padding: 6px 14px calc(14px + var(--safe-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Placeholder for the 3D match plate: the game draws the plate here. */
+.plate {
+  width: min(44vw, 22vh, 190px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+.plate.shake {
+  animation: shake 0.35s;
+  box-shadow: 0 0 0 4px var(--danger), 0 0 24px var(--danger);
+}
+
+.booster-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.matchbox {
-  display: flex;
-  gap: 14px;
-  padding: 10px 18px;
-  border-radius: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.18);
-}
-.matchbox.shake {
-  animation: shake 0.35s;
-  border-color: var(--danger);
-}
-
-.slot {
-  width: min(22vw, 13vh, 96px);
-  height: min(22vw, 13vh, 96px);
-  border-radius: 18px;
-  border: 3px dashed rgba(255, 255, 255, 0.3);
-  /* transparent center: the 3D object shows through */
-}
-
-.powerups {
-  display: flex;
   gap: 12px;
-  width: 100%;
-  max-width: 420px;
 }
 
 .powerup {
   position: relative;
-  flex: 1;
+  width: min(16vw, 64px);
+  aspect-ratio: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 4px;
-  border-radius: 16px;
-  border: none;
-  background: linear-gradient(#6f7dff, var(--primary-dark));
-  box-shadow: 0 4px 0 #262d8a;
+  justify-content: center;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle at 35% 30%, #7d8cff, var(--primary-dark));
+  box-shadow: 0 4px 0 #262d8a, 0 6px 14px rgba(0, 0, 0, 0.4);
   color: var(--text);
   cursor: pointer;
 }
@@ -199,16 +188,12 @@ body {
   box-shadow: 0 1px 0 #262d8a;
 }
 .pu-icon {
-  font-size: 22px;
-}
-.pu-label {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: min(7vw, 28px);
 }
 .pu-badge {
   position: absolute;
   top: -6px;
-  right: -4px;
+  right: -6px;
   min-width: 22px;
   padding: 2px 6px;
   border-radius: 999px;
@@ -251,7 +236,7 @@ body {
   -webkit-backdrop-filter: blur(3px);
 }
 #menu {
-  background: radial-gradient(circle at 50% 30%, rgba(27, 22, 64, 0.2), rgba(14, 10, 40, 0.85));
+  background: radial-gradient(circle at 50% 30%, rgba(20, 16, 14, 0.25), rgba(12, 10, 8, 0.85));
 }
 
 .panel {

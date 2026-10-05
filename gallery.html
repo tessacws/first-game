@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Model Gallery</title>
+    <style>
+      body { margin: 0; background: #3b3632; font-family: system-ui, sans-serif; color: #eee; }
+      canvas { display: block; width: 100vw; height: 100vh; }
+      #labels { position: fixed; inset: 0; pointer-events: none; }
+      #labels span { position: absolute; transform: translateX(-50%); font-size: 11px; text-shadow: 0 1px 2px #000; }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"></canvas>
+    <div id="labels"></div>
+    <script type="module" src="/src/gallery.js"></script>
+  </body>
+</html>

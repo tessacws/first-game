@@ -23,12 +23,18 @@ const AD_COINS_PER_DAY = 5;
 
 const POWERUPS = [
   { id: 'hint', icon: '💡', label: 'Hint', desc: 'Highlights a matching pair' },
-  { id: 'shuffle', icon: '🔀', label: 'Shuffle', desc: 'Re-drops the whole pile' },
+  { id: 'shuffle', icon: '🌀', label: 'Shuffle', desc: 'Re-drops the whole pile' },
+  { id: 'magnet', icon: '🧲', label: 'Magnet', desc: 'Pulls a matching pair onto the plate' },
   { id: 'freeze', icon: '❄️', label: 'Freeze', desc: 'Stops the timer for 10s' },
 ];
 const powerupById = Object.fromEntries(POWERUPS.map((p) => [p.id, p]));
 
 const html = String.raw;
+
+const boosterButton = (p) => html`<button class="powerup" data-powerup="${p.id}" aria-label="${p.label}">
+  <span class="pu-icon">${p.icon}</span>
+  <span class="pu-badge" data-bind="pu-${p.id}">0</span>
+</button>`;
 const COIN = '<span class="coin">●</span>';
 
 function formatTime(t) {
@@ -78,19 +84,9 @@ export class UI {
           <div class="coins-pill">${COIN}<span data-bind="coins">0</span></div>
         </div>
         <div class="hud-bottom">
-          <div class="matchbox">
-            <div class="slot"></div>
-            <div class="slot"></div>
-          </div>
-          <div class="powerups">
-            ${POWERUPS.map(
-              (p) => html`<button class="powerup" data-powerup="${p.id}">
-                <span class="pu-icon">${p.icon}</span>
-                <span class="pu-label">${p.label}</span>
-                <span class="pu-badge" data-bind="pu-${p.id}">0</span>
-              </button>`,
-            ).join('')}
-          </div>
+          <div class="booster-col">${POWERUPS.slice(0, 2).map(boosterButton).join('')}</div>
+          <div class="plate" aria-label="Match plate"></div>
+          <div class="booster-col">${POWERUPS.slice(2).map(boosterButton).join('')}</div>
         </div>
       </div>
 
@@ -245,8 +241,8 @@ export class UI {
     const h = window.innerHeight;
     const top = this.$('.hud-top').getBoundingClientRect().bottom;
     const bottomTop = this.$('.hud-bottom').getBoundingClientRect().top;
-    const slotRects = [...this.root.querySelectorAll('.slot')].map((s) => s.getBoundingClientRect());
-    this.game.layout(w, h, top, h - bottomTop, slotRects);
+    const plateRect = this.$('.plate').getBoundingClientRect();
+    this.game.layout(w, h, top, h - bottomTop, plateRect);
   }
 
   /** Re-renders every coin / power-up count and coin-earning button. */
@@ -347,7 +343,7 @@ export class UI {
   }
 
   #shakeBox() {
-    const box = this.$('.matchbox');
+    const box = this.$('.plate');
     box.classList.remove('shake');
     void box.offsetWidth;
     box.classList.add('shake');
@@ -363,8 +359,13 @@ export class UI {
   }
 
   #activate(id) {
-    const ok =
-      id === 'hint' ? this.game.useHint() : id === 'shuffle' ? this.game.useShuffle() : this.game.useFreeze();
+    const use = {
+      hint: () => this.game.useHint(),
+      shuffle: () => this.game.useShuffle(),
+      magnet: () => this.game.useMagnet(),
+      freeze: () => this.game.useFreeze(),
+    };
+    const ok = use[id]();
     if (ok) usePowerup(id);
     else this.toast(id === 'freeze' ? 'Already frozen' : 'Not available right now');
     this.refreshCounts();

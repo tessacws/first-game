@@ -8,7 +8,7 @@
 //   {
 //     id: 'cube',              // unique id, used in level JSON
 //     name: 'Cube',            // display name
-//     color: '#ff4d4d',        // placeholder color (ignored when `model` is set)
+//     color: '#ff4d4d',        // accent color (pop particles; flat color if a shape has no vertex colors)
 //     shape: 'cube',           // key in shapes.js (procedural placeholder)
 //     model: 'models/cube.glb' // OPTIONAL: path relative to /public; overrides `shape`
 //     size: 1,                 // OPTIONAL: relative size multiplier (default 1)
@@ -21,32 +21,46 @@ import * as THREE from 'three';
 import { shapes } from './shapes.js';
 
 export const OBJECT_TYPES = [
-  { id: 'cube', name: 'Cube', color: '#ff4d4d', shape: 'cube', size: 0.9 },
-  { id: 'sphere', name: 'Ball', color: '#3d8bff', shape: 'sphere' },
-  { id: 'cone', name: 'Cone', color: '#ff9a1f', shape: 'cone' },
-  { id: 'torus', name: 'Donut', color: '#ff6fcf', shape: 'torus' },
-  { id: 'capsule', name: 'Pill', color: '#33d17a', shape: 'capsule' },
-  { id: 'cylinder', name: 'Can', color: '#ffe14d', shape: 'cylinder' },
-  { id: 'star', name: 'Star', color: '#ffc400', shape: 'star' },
-  { id: 'pyramid', name: 'Pyramid', color: '#1fc8b4', shape: 'pyramid' },
-  { id: 'octahedron', name: 'Crystal', color: '#9b5cff', shape: 'octahedron' },
-  { id: 'dodecahedron', name: 'Dodeca', color: '#a6e22e', shape: 'dodecahedron' },
-  { id: 'icosahedron', name: 'Icosa', color: '#4de8ff', shape: 'icosahedron' },
-  { id: 'tetrahedron', name: 'Tetra', color: '#ff3df0', shape: 'tetrahedron' },
-  { id: 'heart', name: 'Heart', color: '#e0103a', shape: 'heart' },
-  { id: 'prism', name: 'Prism', color: '#c77a2a', shape: 'prism' },
-  { id: 'hexnut', name: 'Hex Nut', color: '#8a9bb5', shape: 'hexnut' },
-  { id: 'gem', name: 'Gem', color: '#a8d8ff', shape: 'gem' },
-  { id: 'mushroom', name: 'Mushroom', color: '#f2d6b3', shape: 'mushroom' },
-  { id: 'cross', name: 'Jack', color: '#f5f5f5', shape: 'cross' },
-  { id: 'knot', name: 'Knot', color: '#6a4cff', shape: 'knot' },
-  { id: 'bell', name: 'Bell', color: '#d4a017', shape: 'bell' },
-  { id: 'starburst', name: 'Sun', color: '#ff7a45', shape: 'starburst' },
-  { id: 'barrel', name: 'Barrel', color: '#7d4f2b', shape: 'barrel' },
+  { id: 'volleyball', name: 'Volleyball', color: '#2f6fdf', shape: 'volleyball' },
+  { id: 'basketball', name: 'Basketball', color: '#f57c1f', shape: 'basketball' },
+  { id: 'tennis', name: 'Tennis ball', color: '#d4ec3a', shape: 'tennis', size: 0.8 },
+  { id: 'soccer', name: 'Football', color: '#fafafa', shape: 'soccer' },
+  { id: 'donut', name: 'Donut', color: '#ff7eb9', shape: 'donut' },
+  { id: 'burger', name: 'Burger', color: '#f0a94f', shape: 'burger' },
+  { id: 'cake', name: 'Cake', color: '#ff9ac2', shape: 'cake' },
+  { id: 'toiletroll', name: 'Toilet roll', color: '#f7f7f2', shape: 'toiletroll' },
+  { id: 'wheel', name: 'Wheel', color: '#8d939b', shape: 'wheel' },
+  { id: 'grapes', name: 'Grapes', color: '#9c4dd8', shape: 'grapes' },
+  { id: 'popsicle', name: 'Popsicle', color: '#ff7a3d', shape: 'popsicle' },
+  { id: 'watermelon', name: 'Watermelon', color: '#ff4d5e', shape: 'watermelon' },
+  { id: 'apple', name: 'Apple', color: '#e53935', shape: 'apple', size: 0.9 },
+  { id: 'cherries', name: 'Cherries', color: '#d81b60', shape: 'cherries', size: 0.9 },
+  { id: 'strawberry', name: 'Strawberry', color: '#e8283c', shape: 'strawberry', size: 0.85 },
+  { id: 'carrot', name: 'Carrot', color: '#ff8c1a', shape: 'carrot' },
+  { id: 'cupcake', name: 'Cupcake', color: '#ffc1dc', shape: 'cupcake' },
+  { id: 'icecream', name: 'Ice cream', color: '#ff9cc7', shape: 'icecream' },
+  { id: 'mushroom', name: 'Mushroom', color: '#e53935', shape: 'mushroom', size: 0.9 },
+  { id: 'gift', name: 'Gift', color: '#e53950', shape: 'gift' },
+  { id: 'trafficcone', name: 'Traffic cone', color: '#ff6d00', shape: 'trafficcone' },
+  { id: 'dice', name: 'Dice', color: '#fafafa', shape: 'dice', size: 0.85 },
+  { id: 'duck', name: 'Rubber duck', color: '#ffd60a', shape: 'duck' },
+  { id: 'lollipop', name: 'Lollipop', color: '#ff4f8b', shape: 'lollipop' },
+  { id: 'mug', name: 'Mug', color: '#3d8bff', shape: 'mug', size: 0.9 },
+  { id: 'egg', name: 'Egg', color: '#fff1d6', shape: 'egg', size: 0.8 },
+  { id: 'pencil', name: 'Pencil', color: '#ffc107', shape: 'pencil' },
+  { id: 'candy', name: 'Candy', color: '#ff3b6b', shape: 'candy' },
+  { id: 'pizza', name: 'Pizza', color: '#ffcf48', shape: 'pizza' },
+  { id: 'soda', name: 'Soda can', color: '#e3262f', shape: 'soda', size: 0.9 },
+  { id: 'crown', name: 'Crown', color: '#ffc928', shape: 'crown', size: 0.9 },
+  { id: 'teapot', name: 'Teapot', color: '#26a69a', shape: 'teapot' },
+  { id: 'banana', name: 'Banana', color: '#ffe135', shape: 'banana' },
+  { id: 'whale', name: 'Whale', color: '#1f4fa8', shape: 'whale' },
+  { id: 'star', name: 'Star', color: '#ffc400', shape: 'star', size: 0.9 },
+  { id: 'heart', name: 'Heart', color: '#e0103a', shape: 'heart', size: 0.85 },
 ];
 
 /** Base diameter (world units) every asset is normalized to. */
-export const OBJECT_SIZE = 1.35;
+export const OBJECT_SIZE = 1.1;
 const MAX_HULL_POINTS = 256;
 
 const byId = new Map(OBJECT_TYPES.map((t) => [t.id, t]));
@@ -79,12 +93,13 @@ function buildProcedural(type) {
   const builder = shapes[type.shape];
   if (!builder) throw new Error(`No procedural shape "${type.shape}" for "${type.id}"`);
   const geometry = builder();
-  geometry.computeVertexNormals();
+  if (!geometry.attributes.normal) geometry.computeVertexNormals();
   const material = new THREE.MeshStandardMaterial({
-    color: type.color,
-    roughness: 0.55,
-    metalness: 0.05,
-    flatShading: true,
+    // Procedural models carry their colors per vertex (see build.js)
+    vertexColors: !!geometry.attributes.color,
+    color: geometry.attributes.color ? '#ffffff' : type.color,
+    roughness: 0.5,
+    metalness: 0.0,
   });
   return new THREE.Mesh(geometry, material);
 }
@@ -181,6 +196,8 @@ export async function createObject(id) {
     object3d,
     hullPoints: asset.hullPoints,
     radius: asset.radius,
+    /** accent color, used for particle effects */
+    color: asset.type.color ?? '#ffffff',
     /** amount 0..1 */
     setHighlight(amount) {
       const a = typeof amount === 'number' ? amount : amount ? 1 : 0;
